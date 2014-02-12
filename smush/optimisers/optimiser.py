@@ -137,8 +137,14 @@ class Optimiser(object):
             if not command:
                 break
 
-            output_file_name = self._get_output_file_name()
-            command = self.__replace_placeholders(command, self.input, output_file_name)
+            
+            if command.startswith('jpegoptim'):
+                output_file_name = "/tmp/" + self.input.split("/").pop()
+                command = self.__replace_placeholders(command, self.input, "/tmp")
+            else:
+                output_file_name = self._get_output_file_name()
+                command = self.__replace_placeholders(command, self.input, output_file_name)
+            
             logging.info("Executing %s" % (command))
             args = shlex.split(command)
             
@@ -147,6 +153,10 @@ class Optimiser(object):
             except OSError:
                 logging.error("Error executing command %s. Error was %s" % (command, OSError))
                 sys.exit(1)
+
+            if command.startswith('jpegoptim'):
+                if not os.path.isfile(output_file_name):
+                    shutil.copy(self.input, output_file_name)
 
             if retcode != 0:
                 # gifsicle seems to fail by the file size?

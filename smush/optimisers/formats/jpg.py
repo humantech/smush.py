@@ -19,11 +19,11 @@ class OptimiseJPG(Optimiser):
         if strip_jpg_meta:
             self.commands = ('jpegtran -outfile "__OUTPUT__" -optimise -copy none "__INPUT__"',
                 'jpegtran -outfile "__OUTPUT__" -optimise -progressive "__INPUT__"',
-                'jpegoptim --strip-all "__OUTPUT__"')
+                'jpegoptim --strip-all -d"__OUTPUT__" "__INPUT__"')
         else:
             self.commands = ('jpegtran -outfile "__OUTPUT__" -optimise -copy all "__INPUT__"',
                 'jpegtran -outfile "__OUTPUT__" -optimise -progressive -copy all "__INPUT__"',
-                'jpegoptim --strip-all "__OUTPUT__"')
+                'jpegoptim --strip-all -d"__OUTPUT__" "__INPUT__"')
 
         # format as returned by 'identify'
         self.format = "JPEG"
@@ -45,5 +45,8 @@ class OptimiseJPG(Optimiser):
                 if self.quiet == False:
                     logging.warning("File is > 10kb - will be converted to progressive")
                 return self.commands[1]
+        elif self.iterations == 2:
+            return self.commands[2]
+            self.iterations += 1
 
         return False
