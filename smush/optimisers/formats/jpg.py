@@ -46,7 +46,7 @@ class OptimiseJPG(Optimiser):
                     logging.warning("File is > 10kb - will be converted to progressive")
                 return self.commands[1]
         elif self.iterations == 2:
-            return self.commands[2]
             self.iterations += 1
+            return self.commands[2]
 
         return False
