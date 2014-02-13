@@ -36,7 +36,7 @@ class OptimiseJPG(Optimiser):
         # for the first iteration, return the first command
         if self.iterations <= 1:
             self.iterations += 1
-            return self.commands[self.iterations]
+            return self.commands[self.iterations-1]
         elif self.iterations == 2:
             self.iterations += 1
                         
