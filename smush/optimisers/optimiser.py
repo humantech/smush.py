@@ -159,8 +159,9 @@ class Optimiser(object):
                     shutil.copy(self.input, output_file_name)
 
             if retcode != 0:
-                # gifsicle seems to fail by the file size?
-                os.unlink(output_file_name)
+                if os.path.isfile(output_file_name):
+                    # gifsicle seems to fail by the file size?
+                    os.unlink(output_file_name)
             else:
                 if not self.list_only:
                     # compare file sizes if the command executed successfully
