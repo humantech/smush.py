@@ -90,7 +90,8 @@ class Optimiser(object):
                 sys.exit(1)
         
         # delete the output file
-        os.unlink(output)
+        if os.path.isfile(output):
+            os.unlink(output)
         
     def _is_acceptable_image(self, input):
         """
