@@ -76,7 +76,10 @@ class Optimiser(object):
         Compares the sizes of two files, and discards the larger one
         """
         input_size = os.path.getsize(input)
-        output_size = os.path.getsize(output)
+        if os.path.isfile(output):
+             output_size = os.path.getsize(output)
+        else:
+             output_size = -1
 
         # if the image was optimised (output is smaller than input), overwrite the input file with the output
         # file.
