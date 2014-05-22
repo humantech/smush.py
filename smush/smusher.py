@@ -16,7 +16,7 @@ class Smusher:
         else:
             self.temp_dir = temp_dir
         self.exclude = ['.bzr', '.git', '.hg', '.svn']
-        pass
+
 
     def process(self, input_src, output = None, strip_jpg_meta = False, 
             exclude = [], recursive = True, list_only = False, quiet = True,
@@ -64,11 +64,12 @@ class Smusher:
         if output is not None:
             if os.path.exists(output) and os.path.isdir(output):
                 for item in os.listdir(work_temp_dir):
-                    if os.path.exists(item):
-                        if os.path.isdir(item):
-                            shutil.rmtree(item)
+                    dest_item = '%s/%s'%(output, item)
+                    if os.path.exists(dest_item):
+                        if os.path.isdir(dest_item):
+                            shutil.rmtree(dest_item)
                         else:
-                            os.remove(item)
+                            os.remove(dest_item)
                     shutil.move('%s/%s'%(work_temp_dir, item), output)
             else:
                 shutil.move(work_temp_dir, output)
