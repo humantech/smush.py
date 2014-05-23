@@ -9,22 +9,23 @@ import os
 import core
 from core import Smush
 
-class Smusher:
-    def __init__(self, temp_dir = None):
+
+class Smusher(object):
+
+    def __init__(self, temp_dir=None):
         if temp_dir is None:
             self.temp_dir = tempfile.gettempdir()
         else:
             self.temp_dir = temp_dir
         self.exclude = ['.bzr', '.git', '.hg', '.svn']
 
-
-    def process(self, input_src, output = None, strip_jpg_meta = False, 
-            exclude = [], recursive = True, list_only = False, quiet = True,
-            identify_mime = False):
+    def process(self, input_src, output=None, strip_jpg_meta=True,
+                exclude=[], recursive=True, list_only=False, quiet=True,
+                identify_mime=False):
         '''Prepare image on a temporary location and optimizes it
         
         Keyword arguments:
-        input_src -- a tuple (img_data_buffer, mime), a string with a file path or a list with tuples or strings (can be mixed)
+        input_src -- a tuple (img_data_buffer, file_type), a string with a file path or a list with tuples or strings (can be mixed)
         output -- a path for a directory to save the optimized files.
         strip_jpg_meta -- Boolean: Strip all meta-data from JPEGs (Default False)
         exclude -- list of files to ignore (Default ['.bzr', '.git', '.hg', '.svn'])
@@ -34,7 +35,7 @@ class Smusher:
         identify_mime -- Fast identify image files via mimetype (Default False)
 
         Output:
-        None if argument output is not None. A list of byte buffer otherwise.
+        None if argument output is not None. A tuple list of (byte buffer, file_type) otherwise.
 
         Remarks:
         The original buffer or files are untouched
@@ -55,7 +56,7 @@ class Smusher:
 
         exclude_list = self.exclude + exclude
         smush = Smush(strip_jpg_meta=strip_jpg_meta, exclude=exclude_list,
-            list_only=list_only, quiet=quiet, identify_mime=identify_mime)
+                      list_only=list_only, quiet=quiet, identify_mime=identify_mime)
 
         work_temp_dir = self._prepare_input(input_src)
 
@@ -64,29 +65,31 @@ class Smusher:
         if output is not None:
             if os.path.exists(output) and os.path.isdir(output):
                 for item in os.listdir(work_temp_dir):
-                    dest_item = '%s/%s'%(output, item)
+                    dest_item = '%s/%s' % (output, item)
                     if os.path.exists(dest_item):
                         if os.path.isdir(dest_item):
                             shutil.rmtree(dest_item)
                         else:
                             os.remove(dest_item)
-                    shutil.move('%s/%s'%(work_temp_dir, item), output)
+                    shutil.move('%s/%s' % (work_temp_dir, item), output)
             else:
                 shutil.move(work_temp_dir, output)
         else:
             return_data = []
             for root, _, files in os.walk(work_temp_dir):
                 for fname in files:
+                    file_type = os.path.splitext(fname)[1]
+                    if len(file_type) > 0:
+                        file_type = file_type[1:]
                     fullpath = os.path.join(root, fname)
                     f = open(fullpath, 'r+b')
-                    return_data.append(f.read())
+                    return_data.append((f.read(), file_type))
                     f.close()
 
         if os.path.exists(work_temp_dir):
             shutil.rmtree(work_temp_dir)
 
         return return_data
-
 
     def _prepare_input(self, input_src):
         list_input = []
@@ -101,16 +104,16 @@ class Smusher:
             if isinstance(i, str) and os.path.exists(i):
                 if os.path.isdir(i):
                     cpdir_basename = os.path.basename(os.path.abspath(i))
-                    cpdir = os.path.normpath('%s/%s' % (current_temp_dir, 
-                        cpdir_basename))
+                    cpdir = os.path.normpath('%s/%s' % (current_temp_dir,
+                                                        cpdir_basename))
                     shutil.copytree(i, cpdir)
                 elif os.path.isfile(i):
                     shutil.copy(i, current_temp_dir)
             elif isinstance(i, tuple):
                 buff, mime = i
                 temp_file = tempfile.NamedTemporaryFile(
-                    dir = current_temp_dir, suffix = '.%s' % mime, 
-                    delete = False)
+                    dir=current_temp_dir, suffix='.%s' % mime,
+                    delete=False)
                 temp_file.write(buff)
 
         return current_temp_dir
